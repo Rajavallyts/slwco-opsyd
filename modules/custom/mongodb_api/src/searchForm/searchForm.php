@@ -53,9 +53,10 @@ class searchForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {	     
-		 $mongodb_search = $form_state->getValue("search_text");	
+		 $mongodb_search = strtolower($form_state->getValue("search_text"));	
 		 $_SESSION['mongodb_search'] = $mongodb_search;
 		 global $base_url;
+		 
 		 
 		 if (isset($mongodb_search)) {			 
 		  $api_endpointurl = "ec2-54-210-86-147.compute-1.amazonaws.com:3000/api/collections";		  
@@ -84,16 +85,17 @@ class searchForm extends FormBase {
 					curl_setopt($ch, CURLOPT_POSTFIELDS,http_build_query($api_param));
 					curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 					$server_output = curl_exec ($ch);		
-					curl_close ($ch);					
-					
-					if (strpos($server_output, '' . $mongodb_search . '') > 0) {
+					curl_close ($ch);          
+		
+					if (strpos(strtolower($server_output), $mongodb_search) > 0) {
 						$output_html .= "<br><div><b>" . $result['name'] . "</b></div>";
-						$json_documents = json_decode($server_output, true);
+						$json_documents = json_decode($server_output, true);						
 						$output_subhtml = '';
 						$dcount = 0;
 						foreach($json_documents as $doc):										
 							$json_obj = json_encode($doc);
-							if (strpos($json_obj, '' . $mongodb_search . '') > 0 ) {
+							if (strpos(strtolower($json_obj),$mongodb_search) > 0 ) 
+							{
 								$resultCount++;
 								$output_subhtml .= "<div><a href='" . $base_url . "/mongodb_api/managedocument?mongodb_collection=".$result['name'];
 								$inner_html = "";
@@ -109,12 +111,16 @@ class searchForm extends FormBase {
 								$inner_html .= "{" . $fieldcount . " fields}";
 								$output_subhtml .= "&document_id=". $inner_id ."'>". $inner_html . "</a></div>";
 							}
-						endforeach;		
+						endforeach;			
 						$output_html .=  $output_subhtml;
-					}					
+					}				
 				endforeach;
+				
 				if ($resultCount == 0)
 				$output_html = "<BR><BR>" . t("No record matched your search keyword");
+			
+			
+			
 				$form_state->set("form_status", $output_html);		
 			}			
 			$form_state->setRebuild();			
