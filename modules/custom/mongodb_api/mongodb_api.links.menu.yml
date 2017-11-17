@@ -1,0 +1,6 @@
+mongodb_api.admin:
+  title: 'Mongo DB'
+  description: 'Module to integrate MongoDB API calls'
+  parent: system.admin_structure
+  route_name: mongodb_api.content
+  weight: 100

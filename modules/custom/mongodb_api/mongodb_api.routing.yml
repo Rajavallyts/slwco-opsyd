@@ -1,0 +1,79 @@
+mongodb_api.connectMongoDB:    
+    path: '/mongodb_api/connect_mongodb'
+    defaults:
+        _controller: '\Drupal\mongodb_api\Controller\mongodb_apiController::connectMongoDB'
+        _title: 'MongoDB Collections'
+    requirements:
+        _permission: 'administer mongodb_api'    
+
+mongodb_api.listcollection:    
+    path: '/mongodb_api/listcollection'
+    defaults:
+        _controller: '\Drupal\mongodb_api\Controller\mongodb_apiController::listcollection'
+        _title: 'MongoDB Collections'
+    requirements:
+        _permission: 'administer mongodb_api'    
+        
+mongodb_api.listdocument:    
+    path: '/mongodb_api/listdocument'
+    defaults:
+        _controller: '\Drupal\mongodb_api\Controller\mongodb_apiController::listdocument'
+        _title: 'MongoDB Documents'
+    requirements:
+        _permission: 'administer mongodb_api'  
+
+mongodb_api.content:
+  path: '/mongodb_api/managedocument'
+  defaults:
+    _form: '\Drupal\mongodb_api\Form\managedocumentForm'
+    _title: 'Mongo DB Document'
+  requirements:
+    _permission: 'administer mongodb_api'   
+    
+mongodb_api.subdocument:
+  path: '/mongodb_api/managesubdocument'
+  defaults:
+    _form: '\Drupal\mongodb_api\subForm\managesubdocumentForm'
+    _title: 'Mongo DB Sub Document'
+  requirements:
+    _permission: 'administer mongodb_api'       
+
+mongodb_api.closeConnection:
+  path: '/mongodb_api/closeConnection'
+  defaults:
+    _form: '\Drupal\mongodb_api\closeForm\closeconnectionForm'
+    _title: 'Close Connection'
+  requirements:
+    _permission: 'administer mongodb_api'  
+
+mongodb_api.addCollection:
+  path: '/mongodb_api/addCollection'
+  defaults:
+    _form: '\Drupal\mongodb_api\addcollectionForm\addcollectionForm'
+    _title: 'Add Collection'
+  requirements:
+    _permission: 'administer mongodb_api'
+    
+mongodb_api.addDocument:
+  path: '/mongodb_api/addDocument'
+  defaults:
+    _form: '\Drupal\mongodb_api\adddocumentForm\adddocumentForm'
+    _title: 'Add Document'
+  requirements:
+    _permission: 'administer mongodb_api'   
+
+mongodb_api.addJSON:
+  path: '/mongodb_api/addJSON'
+  defaults:
+    _form: '\Drupal\mongodb_api\addJSONForm\addJSONForm'
+    _title: 'Add JSON'
+  requirements:
+    _permission: 'administer mongodb_api'    
+
+mongodb_api.search:
+  path: '/mongodb_api/search'
+  defaults:
+    _form: '\Drupal\mongodb_api\searchForm\searchForm'
+    _title: 'Search MongoDB'
+  requirements:
+    _permission: 'administer mongodb_api'    

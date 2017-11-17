@@ -1,0 +1,4 @@
+administer mongodb_api:
+  title: 'Administer MongoDB API'
+  description: 'Manage MongoDB database API, collections, documents and key-value-type pair'
+  restrict access: true

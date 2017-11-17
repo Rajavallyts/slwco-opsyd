@@ -1,0 +1,202 @@
+<?php
+
+
+/*
+ * Implements hook_form_FORM_ID_alter
+ */
+
+function mongodb_api_form_node_mongodb_information_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id)
+{
+	$form['advanced']['#access'] = FALSE;
+	$submit_action = $form['actions']['submit']['#submit'];
+	$submit_action[] = 'mongodb_submit_connect';
+	$form['actions']['submit_connect'] = array(
+		'#type' => 'submit',
+		'#value' => t('Add and Connect'),
+		'#submit' => $submit_action,
+		'#button_type' => 'primary',
+	);
+	$form['meta']['#access'] = FALSE;
+	$form['menu']['#access'] = FALSE;
+	$form['revision_information']['#access'] = FALSE;
+
+	foreach (array_keys($form['actions']) as $action) {
+    if ($action != 'preview' && isset($form['actions'][$action]['#type']) && $form['actions'][$action]['#type'] === 'submit') {
+      $form['actions'][$action]['#submit'][] = 'callback_submit';
+    }
+  }
+ 
+}
+
+function callback_submit(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+  //$form_state->setRedirect('custom.page');
+  global $base_url;
+  $redirect_url = $base_url . '/mongodb-list';
+			$response = new Symfony\Component\HttpFoundation\RedirectResponse($redirect_url);
+			$response->send();
+			return;
+}
+
+/*
+ * Implements hook_form_FORM_ID_alter
+ */
+
+function mongodb_api_form_node_mongodb_information_edit_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id)
+{
+	$form['meta']['#access'] = FALSE;
+	$form['menu']['#access'] = FALSE;
+	$form['revision_information']['#access'] = FALSE;
+	$submit_action = $form['actions']['submit']['#submit'];
+	$submit_action[] = 'mongodb_submit_connect';
+	$form['actions']['submit_connect'] = array
+	(
+		'#type' => 'submit',
+		'#value' => t('Save and Connect'),
+		'#submit' => $submit_action,
+		'#button_type' => 'primary',
+	);
+	
+	foreach (array_keys($form['actions']) as $action) {
+    if ($action != 'preview' && isset($form['actions'][$action]['#type']) && $form['actions'][$action]['#type'] === 'submit') {
+      $form['actions'][$action]['#submit'][] = 'callback_submit';
+    }
+  }
+}
+
+/**
+ *  Custom submit handler to save MongoDB Information and Connect
+ */
+
+function mongodb_submit_connect(&$form, &$form_state)
+{
+	global $base_url;
+	
+	if ($_SESSION['mongodb_token'] != "") {
+		  $api_endpointurl = "ec2-54-210-86-147.compute-1.amazonaws.com:3000/api/close";
+		$api_param = array ("token" => $_SESSION['mongodb_token']);
+									 
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $api_endpointurl);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS,http_build_query($api_param));
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	    $server_output = curl_exec ($ch);		
+		curl_close ($ch);		
+		$_SESSION['mongodb_token'] = "";
+	  }
+	
+	/*	
+		$api_param = array (
+			'host' => $form_state->getValue('title')[0]['value'],
+			'dbName' => $form_state->getValue('field_db_name')[0]['value']
+		);
+	
+		$api_endpointurl = "ec2-54-210-86-147.compute-1.amazonaws.com:3000/api/connect";
+	//	$api_endpointurl = "127.0.0.1:3000/api/connect";
+	
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $api_endpointurl);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS,http_build_query($api_param));
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);*/
+		
+		$api_endpointurl = "ec2-54-210-86-147.compute-1.amazonaws.com:3000/api/connect";
+		$mongodb_nid = $form_state->getValue('nid');//$_GET['mongodb_id'];
+		$mongodb_node = node_load($mongodb_nid);		
+		if (isset($mongodb_node->field_upload_key->entity) ) {			
+			$file_uri = $mongodb_node->field_upload_key->entity->getFileUri();		
+			if (trim($mongodb_node->field_username->value) != "") {
+				$api_param = array (
+					'ssh'  => true,
+					'host' => $mongodb_node->title->value,
+					'dbName' => $mongodb_node->field_db_name->value,
+					'keyfile' => drupal_realpath($file_uri),
+					'username' => $mongodb_node->field_username->value,
+				);
+			} else {
+				$api_param = array (
+					'ssl'  => true,
+					'host' => $mongodb_node->title->value,
+					'dbName' => $mongodb_node->field_db_name->value,
+					'keyfile' => drupal_realpath($file_uri),					
+				);
+			}
+		} else {
+			$api_param = array (			
+			'host' => $mongodb_node->title->value,
+			'dbName' => $mongodb_node->field_db_name->value,			
+			);
+		}
+
+		$headers = array("Content-Type:multipart/form-data"); // cURL headers for file uploading
+		/*$postfields = array('ssl'  => true,
+			'host' => $mongodb_node->title->value,
+			'dbName' => $mongodb_node->field_db_name->value,
+			'keyfile' => "@$filedata", "filename" => $file_uri);//array("filedata" => "@$filedata", "filename" => $file_uri);*/
+		$ch = curl_init();
+		$options = array(
+			CURLOPT_URL => $api_endpointurl,
+			CURLOPT_HEADER => true,
+			CURLOPT_POST => 1,
+			CURLOPT_HTTPHEADER => $headers,
+			CURLOPT_POSTFIELDS => $api_param,        
+			CURLOPT_RETURNTRANSFER => true
+		); 
+		curl_setopt_array($ch, $options);
+		$server_output = curl_exec ($ch);
+				
+		$response = $server_output;
+		$header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+		$header = substr($response, 0, $header_size);
+		$body = substr($response, $header_size);
+		$json_result = json_decode($body, true);;
+		curl_close ($ch);
+		if ($json_result['success'] == 1) {
+			$_SESSION['mongodb_token'] = $json_result['token'];
+			drupal_set_message (t('Success - Mongo DB connection establised.'));
+			$redirect_url = $base_url . '/mongodb_api/listcollection';
+			$response = new Symfony\Component\HttpFoundation\RedirectResponse($redirect_url);
+			$response->send();
+			return;
+		}
+		else {
+			$errormessage = "Invalid Database information.  No connection establised with <b>IP - " . $form_state->getValue('title')[0]['value'] . "</b> and <b> name - " . $form_state->getValue('field_db_name')[0]['value'] . "</b>"; 
+			drupal_set_message(t($errormessage), "error");
+	   }
+	
+}
+
+
+function mongodb_parseJSON($json_input)
+{
+	//$json_output = '<div id="accordion"><h3>Expand JSON</h3><div>' . $json_input .'</div><h3>test</h3><div>dasfdsafdsaf dsafD</div></div>';
+	$json_output = '<div class="container">
+    <div id="apiheader"><span>Expand JSON</span>
+
+    </div>
+    <div class="testcontent">' . $json_input . '</div>
+</div>';
+	return $json_output;
+}
+/*
+ * Implements hook_user_logout
+ */
+
+function mongodb_api_user_logout($account)
+{
+	if ($_SESSION['mongodb_token'] != "") {
+		  $api_endpointurl = "ec2-54-210-86-147.compute-1.amazonaws.com:3000/api/close";
+		$api_param = array ("token" => $_SESSION['mongodb_token']);
+									 
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $api_endpointurl);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS,http_build_query($api_param));
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	    $server_output = curl_exec ($ch);		
+		curl_close ($ch);
+		$_SESSION['mongodb_token'] = "";
+	  }
+}
+
+?>

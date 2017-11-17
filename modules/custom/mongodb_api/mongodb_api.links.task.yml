@@ -1,0 +1,29 @@
+mongodb_api.collectionlist:
+  route_name : mongodb_api.listcollection
+  title: Collection List
+  base_route: mongodb_api.listcollection
+  weight: 10
+
+mongodb_api.documentlist:
+  route_name: mongodb_api.listdocument
+  title: Document List
+  base_route: mongodb_api.listcollection
+  weight: 20
+  
+mongodb_api.managedocumentinfo:
+  route_name: mongodb_api.content
+  title: Document Information
+  base_route: mongodb_api.listcollection
+  weight: 30
+  
+mongodb_api.searchmongodb:
+  route_name: mongodb_api.search
+  title: Search MongoDB
+  base_route: mongodb_api.listcollection
+  weight: 40
+  
+mongodb_api.closemdbconnection:
+  route_name: mongodb_api.closeConnection
+  title: Close Connection
+  base_route: mongodb_api.listcollection
+  weight: 50  
