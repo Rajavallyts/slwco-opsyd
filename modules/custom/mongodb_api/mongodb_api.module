@@ -169,12 +169,9 @@ function mongodb_submit_connect(&$form, &$form_state)
 
 function mongodb_parseJSON($json_input)
 {
-	//$json_output = '<div id="accordion"><h3>Expand JSON</h3><div>' . $json_input .'</div><h3>test</h3><div>dasfdsafdsaf dsafD</div></div>';
-	$json_output = '<div class="container">
-    <div id="apiheader"><span>Expand JSON</span>
-
-    </div>
-    <div class="testcontent">' . $json_input . '</div>
+	$json_output = '<input type="button" value="Copy JSON"><div class="container">
+    <div id="apiheader"><span>Expand JSON</span></div>
+	<div class="testcontent"><div id="copyToClipboard">Copy JSON</div><div class="json_container">' . $json_input . '</div></div>
 </div>';
 	return $json_output;
 }
